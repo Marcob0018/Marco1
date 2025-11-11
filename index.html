@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Preventivo Cantiere – Webapp</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <style>
+    :root { --bg:#0f172a; --card:#111827; --muted:#94a3b8; --acc:#22c55e; --text:#e5e7eb; }
+    *{ box-sizing: border-box; }
+    body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif; background:linear-gradient(180deg,#0b1222,#0f172a); color:var(--text); }
+    header{ padding:20px; text-align:center; }
+    header h1{ margin:8px 0 0; font-size:22px; }
+    header small{ color:var(--muted); }
+    .wrap{ max-width:980px; margin:0 auto; padding:16px; }
+    .card{ background:rgba(17,24,39,.7); backdrop-filter: blur(8px); border:1px solid #1f2937; border-radius:18px; padding:16px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+    form{ display:grid; gap:14px; }
+    .row{ display:grid; gap:12px; grid-template-columns: 1fr; }
+    @media(min-width:720px){ .row{ grid-template-columns: 1fr 1fr; } }
+    label{ font-size:14px; color:#cbd5e1; display:block; margin-bottom:6px; }
+    input[type="text"], input[type="number"], input[type="file"], textarea{ width:100%; padding:12px 14px; border-radius:12px; border:1px solid #334155; background:#0b1222; color:var(--text); outline:none; }
+    input::placeholder, textarea::placeholder{ color:#64748b; }
+    .hint{ color:#94a3b8; font-size:12px; }
+    .actions{ display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+    button{ cursor:pointer; border:none; border-radius:12px; padding:12px 16px; background:linear-gradient(180deg,#22c55e,#16a34a); color:#04110a; font-weight:700; box-shadow: 0 6px 18px rgba(34,197,94,.35); }
+    button.secondary{ background:#0b1222; color:#d1d5db; border:1px solid #334155; box-shadow:none; }
+    .preview{ margin-top:16px; display:grid; gap:16px; grid-template-columns: 1fr; }
+    @media(min-width:900px){ .preview{ grid-template-columns: 2fr 1fr; } }
+    .sheet{ background:white; color:#0b1222; border-radius:12px; overflow:hidden; border:1px solid #e5e7eb; }
+    .sheet header{ background:#0b1222; color:#fff; padding:18px; text-align:left; }
+    .sheet header h2{ margin:0; font-size:18px; }
+    .sheet .inner{ padding:16px; }
+    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    .kv{ display:flex; justify-content:space-between; border-bottom:1px dashed #e5e7eb; padding:6px 0; }
+    .photo{ width:100%; border-radius:10px; border:1px solid #e5e7eb; overflow:hidden; background:#f8fafc; display:flex; align-items:center; justify-content:center; min-height:160px; }
+    .total{ background:#f0fdf4; border:1px solid #bbf7d0; padding:12px; border-radius:12px; font-weight:700; }
+    .perunit{ background:#f8fafc; border:1px solid #e5e7eb; padding:12px; border-radius:12px; }
+    .list{ background:rgba(17,24,39,.6); border:1px solid #1f2937; border-radius:12px; padding:12px; max-height:420px; overflow:auto; }
+    .list h3{ margin:4px 0 8px; font-size:16px; color:#d1d5db; }
+    .item{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px; border:1px solid #334155; border-radius:10px; margin-bottom:8px; }
+    .item small{ color:#a3a3a3; }
+    .danger{ background:linear-gradient(180deg,#ef4444,#dc2626); color:white; }
+    footer{ text-align:center; color:#94a3b8; padding:24px; font-size:12px; }
+    .brand{ font-weight:800; letter-spacing:.3px; }
+    .hidden{ display:none; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">TUA AZIENDA S.R.L.</div>
+    <h1>Preventivo rapido per cantiere</h1>
+    <small>Compila dal telefono, genera PDF e invia al PC</small>
+  </header>
+
+  <div class="wrap">
+    <div class="card">
+      <form id="form">
+        <div class="row">
+          <div>
+            <label for="condominio">Nome del condominio</label>
+            <input id="condominio" type="text" placeholder="Es. Condominio Aurora" required>
+          </div>
+          <div>
+            <label for="luogo">Luogo</label>
+            <input id="luogo" type="text" placeholder="Es. Milano (MI)" required>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="ponteggio">mq di ponteggio</label>
+            <input id="ponteggio" inputmode="decimal" type="number" min="0" step="0.01" placeholder="0" required>
+          </div>
+          <div>
+            <label for="cappotto">mq di cappotto</label>
+            <input id="cappotto" inputmode="decimal" type="number" min="0" step="0.01" placeholder="0" required>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="finestre">N° finestre</label>
+            <input id="finestre" type="number" min="0" step="1" placeholder="0" required>
+          </div>
+          <div>
+            <label for="unita">N° unità immobiliari</label>
+            <input id="unita" type="number" min="1" step="1" placeholder="1" required>
+          </div>
+        </div>
+
+        <div>
+          <label for="foto">Foto edificio</label>
+          <input id="foto" type="file" accept="image/*" capture="environment">
+          <div class="hint">Suggerimento: scatta direttamente dal telefono.</div>
+        </div>
+
+        <div class="actions">
+          <button type="button" id="btnPreview">Aggiorna anteprima</button>
+          <button type="submit">Genera PDF</button>
+          <button type="button" class="secondary" id="btnSave">Salva scheda (locale)</button>
+          <button type="button" class="secondary" id="btnShare">Condividi</button>
+          <button type="button" class="danger" id="btnReset">Svuota form</button>
+        </div>
+      </form>
+
+      <div class="preview">
+        <div class="sheet" id="sheet">
+          <header>
+            <h2>TUA AZIENDA S.R.L.</h2>
+            <div style="opacity:.85; font-size:12px">Via Esempio 123 • 20100 Milano • P.IVA 01234567890 • info@tuaazienda.it</div>
+          </header>
+          <div class="inner">
+            <h3 id="title" style="margin:0 0 4px;">—</h3>
+            <div id="subtitle" style="margin-bottom:12px; color:#374151">—</div>
+
+            <div class="grid">
+              <div>
+                <div class="photo" id="photoBox">Nessuna foto</div>
+              </div>
+              <div>
+                <div class="kv"><span>Ponteggio (mq)</span> <strong id="outPonteggio">0</strong></div>
+                <div class="kv"><span>Cappotto (mq)</span> <strong id="outCappotto">0</strong></div>
+                <div class="kv"><span>Finestre (n°)</span> <strong id="outFinestre">0</strong></div>
+                <div class="kv"><span>Unità (n°)</span> <strong id="outUnita">1</strong></div>
+                <div class="total" style="margin-top:10px;">Importo totale: <span id="outTotale">€ 0,00</span></div>
+                <div class="perunit" style="margin-top:10px;">Edificio nuovo con cappotto a partire da <strong id="outPerUnita">€ 0,00</strong> / unità</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="list">
+          <h3>Archivio locale</h3>
+          <div id="list"></div>
+          <small class="hint">I dati sono salvati solo su questo dispositivo. Esporta in PDF per caricarli su Drive/iCloud o inviarli via email.</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    © <span id="year"></span> Tua Azienda S.R.L. — Webapp offline (gratuita)
+  </footer>
+
+  <!-- jsPDF per generare il PDF direttamente dal browser -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <script>
+    const EURO = new Intl.NumberFormat('it-IT', { style:'currency', currency:'EUR' });
+    const $ = (id)=>document.getElementById(id);
+    const form = $('form');
+    const photoBox = $('photoBox');
+    const listBox = $('list');
+
+    let photoDataUrl = null; // base64 della foto
+
+    function calc(){
+      const ponteggio = parseFloat($('ponteggio').value||0);
+      const cappotto  = parseFloat($('cappotto').value||0);
+      const finestre  = parseInt(($('finestre').value||0),10);
+      const unita     = Math.max(1, parseInt(($('unita').value||1),10));
+
+      const tot = (ponteggio*16) + (cappotto*80) + (finestre*350) + 3000;
+      const perUnit = tot / unita;
+      return { ponteggio, cappotto, finestre, unita, tot, perUnit };
+    }
+
+    function updatePreview(){
+      const { ponteggio, cappotto, finestre, unita, tot, perUnit } = calc();
+      $('title').textContent = ($('condominio').value||'—');
+      $('subtitle').textContent = ($('luogo').value||'—');
+      $('outPonteggio').textContent = ponteggio.toLocaleString('it-IT');
+      $('outCappotto').textContent  = cappotto.toLocaleString('it-IT');
+      $('outFinestre').textContent  = finestre.toLocaleString('it-IT');
+      $('outUnita').textContent     = unita.toLocaleString('it-IT');
+      $('outTotale').textContent    = EURO.format(tot);
+      $('outPerUnita').textContent  = EURO.format(perUnit);
+    }
+
+    function clearPhotoBox(){
+      photoBox.innerHTML = 'Nessuna foto';
+      photoDataUrl = null;
+    }
+
+    function loadPhoto(file){
+      if(!file){ clearPhotoBox(); return; }
+      const reader = new FileReader();
+      reader.onload = (e)=>{
+        photoDataUrl = e.target.result;
+        const img = new Image();
+        img.src = photoDataUrl;
+        img.onload = ()=>{
+          photoBox.innerHTML = '';
+          img.style.maxWidth = '100%';
+          img.style.height = 'auto';
+          photoBox.appendChild(img);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    $('foto').addEventListener('change', (e)=>{
+      const file = e.target.files && e.target.files[0];
+      loadPhoto(file);
+    });
+
+    $('btnPreview').addEventListener('click', updatePreview);
+
+    $('btnReset').addEventListener('click', ()=>{
+      form.reset(); clearPhotoBox(); updatePreview();
+    });
+
+    function loadArchive(){
+      listBox.innerHTML='';
+      const all = JSON.parse(localStorage.getItem('archivioPreventivi')||'[]');
+      all.forEach((rec, idx)=>{
+        const el = document.createElement('div');
+        el.className='item';
+        el.innerHTML = `
+          <div>
+            <strong>${rec.condominio}</strong><br>
+            <small>${rec.luogo} • ${new Date(rec.ts).toLocaleString('it-IT')}</small>
+          </div>
+          <div>
+            <button class="secondary" data-act="pdf" data-idx="${idx}">PDF</button>
+            <button class="secondary" data-act="load" data-idx="${idx}">Apri</button>
+            <button class="danger" data-act="del" data-idx="${idx}">Elimina</button>
+          </div>`;
+        listBox.appendChild(el);
+      });
+      if(all.length===0){
+        const empty = document.createElement('div');
+        empty.className='hint';
+        empty.textContent = 'Nessuna scheda salvata.';
+        listBox.appendChild(empty);
+      }
+    }
+
+    function saveRecord(){
+      const record = {
+        ts: Date.now(),
+        condominio: $('condominio').value.trim(),
+        luogo: $('luogo').value.trim(),
+        ...calc(),
+        foto: photoDataUrl
+      };
+      const all = JSON.parse(localStorage.getItem('archivioPreventivi')||'[]');
+      all.unshift(record);
+      localStorage.setItem('archivioPreventivi', JSON.stringify(all));
+      loadArchive();
+      return record;
+    }
+
+    $('btnSave').addEventListener('click', ()=>{
+      updatePreview();
+      const rec = saveRecord();
+      alert('Scheda salvata in archivio locale. Genera il PDF per condividerla.');
+    });
+
+    listBox.addEventListener('click', (e)=>{
+      const btn = e.target.closest('button');
+      if(!btn) return;
+      const idx = parseInt(btn.dataset.idx,10);
+      const all = JSON.parse(localStorage.getItem('archivioPreventivi')||'[]');
+      const rec = all[idx];
+      if(!rec) return;
+      if(btn.dataset.act==='del'){
+        all.splice(idx,1); localStorage.setItem('archivioPreventivi', JSON.stringify(all)); loadArchive();
+      }
+      if(btn.dataset.act==='load'){
+        $('condominio').value = rec.condominio; $('luogo').value = rec.luogo; $('ponteggio').value = rec.ponteggio; $('cappotto').value = rec.cappotto; $('finestre').value = rec.finestre; $('unita').value = rec.unita; photoDataUrl = rec.foto; if(photoDataUrl){ const img = new Image(); img.src=photoDataUrl; img.onload=()=>{ photoBox.innerHTML=''; img.style.maxWidth='100%'; photoBox.appendChild(img); } } else { clearPhotoBox(); } updatePreview();
+      }
+      if(btn.dataset.act==='pdf'){
+        generatePDF(rec);
+      }
+    });
+
+    async function generatePDF(data){
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit:'pt', format:'a4' });
+      const margin = 36;
+      const line = (y)=>{ doc.setDrawColor(230); doc.line(margin, y, doc.internal.pageSize.getWidth()-margin, y); };
+
+      const now = new Date();
+      const dstr = now.toLocaleDateString('it-IT');
+
+      // Header
+      doc.setFillColor(11, 18, 34); // #0b1222
+      doc.rect(0,0,doc.internal.pageSize.getWidth(), 70, 'F');
+      doc.setTextColor(255,255,255);
+      doc.setFontSize(16);
+      doc.text('TUA AZIENDA S.R.L.', margin, 44);
+      doc.setFontSize(10);
+      doc.text('Via Esempio 123 • 20100 Milano • P.IVA 01234567890 • info@tuaazienda.it', margin, 60);
+
+      // Titolo
+      doc.setTextColor(0,0,0);
+      doc.setFontSize(18);
+      doc.text((data?.condominio || $('condominio').value || '—'), margin, 110);
+      doc.setFontSize(12);
+      doc.setTextColor(80);
+      doc.text((data?.luogo || $('luogo').value || '—') + ' • ' + dstr, margin, 130);
+
+      // Foto
+      let y = 150; let photoH = 0; let photoW = 0;
+      const pageW = doc.internal.pageSize.getWidth();
+      if((data?.foto || photoDataUrl)){
+        try{
+          const img = data?.foto || photoDataUrl;
+          // scala a 360pt di larghezza massima
+          const maxW = pageW - margin*2;
+          // stimiamo proporzione con immagine html
+          const tmp = new Image();
+          await new Promise((res,rej)=>{ tmp.onload=res; tmp.onerror=rej; tmp.src=img; });
+          const ratio = tmp.naturalWidth / tmp.naturalHeight;
+          photoW = Math.min(maxW, 360);
+          photoH = photoW / ratio;
+          doc.addImage(img, 'JPEG', margin, y, photoW, photoH, undefined, 'FAST');
+        }catch(e){ /* ignora */ }
+      }
+
+      // Dati a destra
+      const { ponteggio, cappotto, finestre, unita, tot, perUnit } = data || calc();
+      const rightX = margin + (photoW? (photoW + 18) : 0);
+      const colW = pageW - margin - rightX;
+      doc.setTextColor(0);
+      doc.setFontSize(12);
+
+      const lines = [
+        ['Ponteggio (mq)', ponteggio.toLocaleString('it-IT')],
+        ['Cappotto (mq)',  cappotto.toLocaleString('it-IT')],
+        ['Finestre (n°)',  finestre.toLocaleString('it-IT')],
+        ['Unità (n°)',     unita.toLocaleString('it-IT')],
+      ];
+      let y2 = y + (photoH? 0 : 0);
+      lines.forEach(([k,v], i)=>{
+        doc.setFont(undefined, 'normal'); doc.text(k, rightX, y2+14);
+        doc.setFont(undefined, 'bold'); doc.text(String(v), rightX + colW - doc.getTextWidth(String(v)), y2+14);
+        y2 += 22; line(y2);
+      });
+
+      // Totali
+      y2 += 14;
+      doc.setFillColor(240,253,244); doc.setDrawColor(187,247,208); doc.rect(rightX, y2, colW, 36, 'FD');
+      doc.setFont(undefined, 'bold'); doc.text('Importo totale', rightX+10, y2+14);
+      doc.text(EURO.format(tot), rightX + colW - 10 - doc.getTextWidth(EURO.format(tot)), y2+14);
+      y2 += 46;
+      doc.setDrawColor(229,231,235); doc.rect(rightX, y2, colW, 40);
+      doc.setFont(undefined, 'normal'); doc.text('Edificio nuovo con cappotto a partire da', rightX+10, y2+16);
+      doc.setFont(undefined, 'bold'); const per = EURO.format(perUnit) + ' / unità';
+      doc.text(per, rightX + colW - 10 - doc.getTextWidth(per), y2+16);
+
+      // Note a fine pagina
+      doc.setFontSize(9); doc.setTextColor(120);
+      doc.text('Calcolo: mq ponteggio × 16€  +  mq cappotto × 80€  +  finestre × 350€  +  3.000€ di accantieramento.', margin, 800);
+
+      const nameSafe = (data?.condominio || $('condominio').value || 'preventivo').replace(/[^a-z0-9\-_. ]/gi,'_');
+      doc.save(`${nameSafe}.pdf`);
+    }
+
+    form.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      updatePreview();
+      const rec = saveRecord();
+      generatePDF(rec);
+    });
+
+    $('btnShare').addEventListener('click', async ()=>{
+      updatePreview();
+      const rec = saveRecord();
+      const fileName = `${rec.condominio || 'preventivo'}.json`;
+      const blob = new Blob([JSON.stringify(rec,null,2)], { type:'application/json' });
+      const filesArray = [ new File([blob], fileName, { type:'application/json' }) ];
+      if(navigator.share && navigator.canShare && navigator.canShare({ files: filesArray })){
+        try{ await navigator.share({ title:'Scheda cantiere', text:'Dati scheda (JSON) + genera PDF dal sito', files: filesArray }); }catch(e){ /* utente annulla */ }
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href=url; a.download=fileName; a.click(); URL.revokeObjectURL(url);
+        alert('Condivisione non supportata: file scaricato. Caricalo su Drive/iCloud o invialo via email.');
+      }
+    });
+
+    // init
+    updatePreview(); loadArchive(); $('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
