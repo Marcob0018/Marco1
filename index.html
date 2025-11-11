@@ -4,281 +4,237 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ELEEVA – Preventivi Cantiere</title>
-
-  <!-- GOOGLE API -->
   <script src="https://apis.google.com/js/api.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <style>
-    :root {
-      --bg:#020015;
-      --card:#040017;
-      --muted:#595C60;
-      --acc:#6CA85E;
-      --text:#e5e7eb;
-    }
+    :root{ --bg:#ffffff; --text:#111827; --muted:#595C60; --acc:#6CA85E; --ink:#020015; --card:#f8fafc; }
+    *{ box-sizing:border-box }
+    body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif; background:var(--bg); color:var(--text); }
+    header{ padding:20px 16px; text-align:center; border-bottom:1px solid #e5e7eb; background:#fff; position:sticky; top:0; z-index:10 }
+    header .brand{ font-weight:800; letter-spacing:.3px; color:var(--ink) }
+    header img{ height:54px; display:block; margin:0 auto 8px }
 
-    body{
-      margin:0;
-      font-family:system-ui;
-      background:var(--bg);
-      color:var(--text);
-    }
+    .wrap{ max-width:1100px; margin:0 auto; padding:16px }
+    .layout{ display:grid; gap:16px; grid-template-columns:1fr; }
+    @media(min-width:920px){ .layout{ grid-template-columns: 1.1fr 1fr; } }
 
-    header{
-      text-align:center;
-      padding:20px;
-    }
+    .card{ background:var(--card); border:1px solid #e5e7eb; border-radius:16px; padding:16px; box-shadow: 0 10px 20px rgba(0,0,0,.04) }
+    h2{ margin:0 0 8px; }
+    h3{ margin:12px 0 8px }
+    label{ font-size:14px; color:#374151; display:block; margin-bottom:6px }
+    input[type="text"], input[type="number"], input[type="file"]{ width:100%; padding:12px 14px; border-radius:12px; border:1px solid #d1d5db; background:#fff; color:#111827; outline:none }
+    input::placeholder{ color:#9ca3af }
+    .row{ display:grid; gap:12px; grid-template-columns:1fr }
+    .row2{ display:grid; gap:12px; grid-template-columns:1fr }
+    @media(min-width:720px){ .row2{ grid-template-columns:1fr 1fr } }
+    .actions{ display:flex; flex-wrap:wrap; gap:10px; margin-top:12px }
+    button{ cursor:pointer; border:none; border-radius:12px; padding:12px 16px; background:var(--acc); color:#0b1b0f; font-weight:700; }
+    button.secondary{ background:#fff; color:#111827; border:1px solid #d1d5db }
 
-    header img{
-      max-height:70px;
-      margin-bottom:10px;
-    }
+    /* PREVIEW */
+    .sheet{ background:#fff; color:#111827; border:1px solid #e5e7eb; border-radius:16px; overflow:hidden }
+    .sheet header{ background:var(--acc); color:#fff; padding:16px }
+    .sheet .inner{ padding:16px }
+    .grid{ display:grid; gap:12px; grid-template-columns:1fr }
+    @media(min-width:720px){ .grid{ grid-template-columns:1fr 1fr } }
+    .kv{ display:flex; justify-content:space-between; border-bottom:1px dashed #e5e7eb; padding:6px 0 }
+    .photo{ width:100%; border-radius:12px; border:1px solid #e5e7eb; background:#f3f4f6; display:flex; align-items:center; justify-content:center; min-height:220px; overflow:hidden }
+    .photo img{ width:100%; height:100%; object-fit:contain }
+    .total{ background:#ecfdf5; border:1px solid #bbf7d0; padding:12px; border-radius:12px; font-weight:700 }
+    .perunit{ background:#f8fafc; border:1px solid #e5e7eb; padding:12px; border-radius:12px }
 
-    .wrap{
-      max-width:900px;
-      margin:auto;
-      padding:16px;
-    }
-
-    .card{
-      background:var(--card);
-      padding:20px;
-      border-radius:16px;
-    }
-
-    input{
-      width:100%; padding:10px; border-radius:8px;
-      border:1px solid #333;
-      background:#fff;
-    }
-
-    .row{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-      margin-bottom:12px;
-    }
-
-    button{
-      padding:12px 20px;
-      border:none;
-      border-radius:10px;
-      background:var(--acc);
-      font-weight:bold;
-      cursor:pointer;
-      margin-top:10px;
-    }
-
-    .sheet{
-      background:#fff;
-      color:#000;
-      padding:16px;
-      border-radius:12px;
-      margin-top:20px;
-    }
-    .photo{background:#eee;min-height:160px;display:flex;align-items:center;justify-content:center;border-radius:10px;}
-
+    footer{ text-align:center; color:#6b7280; padding:20px; font-size:12px }
   </style>
 </head>
 <body>
+  <header>
+    <img id="logoHeader" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABB0AAAM4CAYAAACAw5qVAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABAtp..." alt="ELEEVA logo" />
+    <div class="brand">ELEEVA SRL</div>
+    <small>Via dell'Industria n° 29 • 36071 Arzignano (VI) • marco@eleeva.it</small>
+  </header>
 
-<header>
-  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABB0AAAM4CAYAAACAw5qVAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABAtp..." />
-  <h1>ELEEVA SRL</h1>
-  <div>Preventivo rapido per cantiere</div>
-</header>
+  <div class="wrap">
+    <div class="layout">
+      <!-- COLONNA SINISTRA: FORM -->
+      <div class="card">
+        <h2>Dati cantiere</h2>
+        <form id="form">
+          <!-- Condominio e Luogo: uno sotto l'altro -->
+          <div class="row">
+            <div>
+              <label for="condominio">Nome del condominio</label>
+              <input id="condominio" type="text" placeholder="Es. Condominio Aurora" required>
+            </div>
+            <div>
+              <label for="luogo">Luogo</label>
+              <input id="luogo" type="text" placeholder="Es. Arzignano (VI)" required>
+            </div>
+          </div>
 
-<div class="wrap">
-  <div class="card">
+          <h3>Ponteggio</h3>
+          <div class="row2">
+            <div>
+              <label for="ponteggio_p">Perimetro (m)</label>
+              <input id="ponteggio_p" type="number" min="0" step="0.01" placeholder="0" required>
+            </div>
+            <div>
+              <label for="ponteggio_h">Altezza (m)</label>
+              <input id="ponteggio_h" type="number" min="0" step="0.01" placeholder="0" required>
+            </div>
+          </div>
 
-    <!-- LOGIN GOOGLE -->
-    <button onclick="googleLogin()" id="loginBtn">Accedi con Google</button>
-    <div id="userInfo" style="margin:10px 0;display:none;">✅ Connesso come: <b id="userEmail"></b></div>
+          <h3>Cappotto</h3>
+          <div class="row2">
+            <div>
+              <label for="cappotto_p">Perimetro (m)</label>
+              <input id="cappotto_p" type="number" min="0" step="0.01" placeholder="0" required>
+            </div>
+            <div>
+              <label for="cappotto_h">Altezza (m)</label>
+              <input id="cappotto_h" type="number" min="0" step="0.01" placeholder="0" required>
+            </div>
+          </div>
 
-    <form id="form">
-      <div class="row">
-        <div><label>Nome condominio</label><input id="condominio" required></div>
-        <div><label>Luogo</label><input id="luogo" required></div>
+          <div class="row2">
+            <div>
+              <label for="finestre">N° finestre</label>
+              <input id="finestre" type="number" min="0" step="1" placeholder="0" required>
+            </div>
+            <div>
+              <label for="unita">N° unità immobiliari</label>
+              <input id="unita" type="number" min="1" step="1" placeholder="1" required>
+            </div>
+          </div>
+
+          <div>
+            <label for="foto">Foto edificio</label>
+            <input id="foto" type="file" accept="image/*" capture="environment">
+          </div>
+
+          <div class="actions">
+            <button type="button" id="btnPreview">Aggiorna anteprima</button>
+            <button type="submit" class="secondary">Genera PDF</button>
+          </div>
+        </form>
       </div>
 
-      <h3>Ponteggio</h3>
-      <div class="row">
-        <div><label>Perimetro (m)</label><input id="ponteggio_p" type="number" min="0" step="0.01" required></div>
-        <div><label>Altezza (m)</label><input id="ponteggio_h" type="number" min="0" step="0.01" required></div>
+      <!-- COLONNA DESTRA: ANTEPRIMA -->
+      <div class="sheet" id="sheet">
+        <header>
+          <div style="display:flex; align-items:center; gap:10px">
+            <div style="font-weight:800">ELEEVA SRL</div>
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABB0AAAM4CAYAAACAw5qVAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABAtp..." alt="logo" style="height:18px; margin-left:auto">
+          </div>
+        </header>
+        <div class="inner">
+          <h3 id="title" style="margin:0 0 4px;">—</h3>
+          <div id="subtitle" style="margin-bottom:12px; color:#374151">—</div>
+          <div class="grid">
+            <div>
+              <div class="photo" id="photoBox">Nessuna foto</div>
+            </div>
+            <div>
+              <div class="kv"><span>Ponteggio (mq)</span> <strong id="outPonteggio">0</strong></div>
+              <div class="kv"><span>Cappotto (mq)</span> <strong id="outCappotto">0</strong></div>
+              <div class="kv"><span>Finestre (n°)</span> <strong id="outFinestre">0</strong></div>
+              <div class="kv"><span>Unità (n°)</span> <strong id="outUnita">1</strong></div>
+              <div class="total" style="margin-top:10px;">Importo totale: <span id="outTotale">€ 0,00</span></div>
+              <div class="perunit" style="margin-top:10px;">Edificio nuovo con cappotto a partire da <strong id="outPerUnita">€ 0,00</strong> / unità</div>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <h3>Cappotto</h3>
-      <div class="row">
-        <div><label>Perimetro (m)</label><input id="cappotto_p" type="number" min="0" step="0.01" required></div>
-        <div><label>Altezza (m)</label><input id="cappotto_h" type="number" min="0" step="0.01" required></div>
-      </div>
-
-      <div class="row">
-        <div><label>N° finestre</label><input id="finestre" type="number" min="0" required></div>
-        <div><label>N° unità immobiliari</label><input id="unita" type="number" min="1" required></div>
-      </div>
-
-      <label>Foto edificio</label>
-      <input id="foto" type="file" accept="image/*" capture="environment">
-
-      <button type="submit">Genera PDF e salva in Drive</button>
-    </form>
-
-    <div class="sheet" id="sheet">
-      <h2 id="s_title">—</h2>
-      <div id="s_sub">—</div>
-      <div class="photo" id="photoBox">Nessuna foto</div>
-      <p>Ponteggio (mq): <b id="s_ponteggio">0</b></p>
-      <p>Cappotto (mq): <b id="s_cappotto">0</b></p>
-      <p>Finestre: <b id="s_finestre">0</b></p>
-      <p>Unità: <b id="s_unita">0</b></p>
-      <h3>Totale: <span id="s_totale">€ 0,00</span></h3>
-      <h4>A partire da <span id="s_unitario">€ 0,00</span> / unità</h4>
     </div>
-
   </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <footer>© <span id="year"></span> ELEEVA SRL • Webapp gratuita</footer>
 
 <script>
-// ============= GOOGLE DRIVE CONFIG =============
-const API_KEY = "AIzaSyCzEJEtwn4R7yuoLUOiPrs5CGhTC6-5rq0";
-const CLIENT_ID = "523209491137-45pgt1m2rq7dhucd9bds0gkqe0er0v1v.apps.googleusercontent.com";
-const SCOPES = 'https://www.googleapis.com/auth/drive.file';
-let GoogleUser = null;
+  const EURO = new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'});
+  const $ = (id)=>document.getElementById(id);
+  const photoBox = $('photoBox');
+  let foto64 = null;
 
-function googleLogin(){
-  gapi.load('client:auth2', async ()=>{
-    await gapi.client.init({ apiKey:API_KEY, clientId:CLIENT_ID, scope:SCOPES });
-    gapi.auth2.getAuthInstance().signIn().then(user=>{
-      GoogleUser=user;
-      document.getElementById('userEmail').textContent=user.getBasicProfile().getEmail();
-      document.getElementById('userInfo').style.display='block';
-    });
-  });
-}
+  function calc(){
+    const ponteggio = (parseFloat($('ponteggio_p').value||0) * parseFloat($('ponteggio_h').value||0));
+    const cappotto  = (parseFloat($('cappotto_p').value||0) * parseFloat($('cappotto_h').value||0));
+    const finestre  = parseInt(($('finestre').value||0),10);
+    const unita     = Math.max(1, parseInt(($('unita').value||1),10));
+    const tot = (ponteggio*16) + (cappotto*80) + (finestre*350) + 3000;
+    const perUnit = tot / unita;
+    return { ponteggio, cappotto, finestre, unita, tot, perUnit };
+  }
 
-// UPLOAD SU DRIVEsync function uploadToDrive(file){
-  const accessToken = gapi.auth.getToken().access_token;
+  function updatePreview(){
+    const { ponteggio, cappotto, finestre, unita, tot, perUnit } = calc();
+    $('title').textContent = ($('condominio').value||'—');
+    $('subtitle').textContent = ($('luogo').value||'—');
+    $('outPonteggio').textContent = ponteggio.toLocaleString('it-IT');
+    $('outCappotto').textContent  = cappotto.toLocaleString('it-IT');
+    $('outFinestre').textContent  = finestre.toLocaleString('it-IT');
+    $('outUnita').textContent     = unita.toLocaleString('it-IT');
+    $('outTotale').textContent    = EURO.format(tot);
+    $('outPerUnita').textContent  = EURO.format(perUnit);
+  }
 
-  const metadata = { name:file.name, mimeType:file.type, parents:[] };
+  function clearPhotoBox(){ photoBox.innerHTML = 'Nessuna foto'; foto64 = null; }
 
-  const form = new FormData();
-  form.append('metadata', new Blob([JSON.stringify(metadata)], {type:'application/json'}));
-  form.append('file', file);
+  function loadPhoto(file){
+    if(!file){ clearPhotoBox(); return; }
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      foto64 = e.target.result;
+      const img = new Image();
+      img.src = foto64;
+      img.onload = ()=>{
+        photoBox.innerHTML = '';
+        img.alt = 'Foto edificio';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'contain';
+        photoBox.appendChild(img);
+      };
+    };
+    reader.readAsDataURL(file);
+  }
 
-  const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{
-    method:'POST',
-    headers:{ 'Authorization':'Bearer ' + accessToken },
-    body:form
-  });
-  return await res.json();
-}
+  $('foto').addEventListener('change', (e)=>{ const f = e.target.files && e.target.files[0]; loadPhoto(f); });
+  $('btnPreview').addEventListener('click', updatePreview);
+  $('form').addEventListener('input', updatePreview);
 
-// ============= LOGICA CALCOLI =============
-const EURO = n => new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(n);
-const $ = id => document.getElementById(id);
-let foto64 = null;
+  $('form').addEventListener('submit', (e)=>{ e.preventDefault(); updatePreview(); generatePDF(); });
 
-$('foto').addEventListener('change', e => {
-  const f = e.target.files[0];
-  if(!f){ foto64=null; return; }
-  const r = new FileReader();
-  r.onload = x => {
-    foto64 = x.target.result;
-    $('photoBox').innerHTML = '<img src="'+foto64+'" style="max-width:100%">';
-  };
-  r.readAsDataURL(f);
-});
+  async function generatePDF(){
+    const { jsPDF } = window.jspdf; const doc = new jsPDF();
+    const o = calc();
 
-function calc(){
-  const ponteggio = parseFloat($('ponteggio_p').value||0) * parseFloat($('ponteggio_h').value||0);
-  const cappotto  = parseFloat($('cappotto_p').value||0) * parseFloat($('cappotto_h').value||0);
-  const finestre = parseInt($('finestre').value||0);
-  const unita = parseInt($('unita').value||1);
-  const tot = (ponteggio*16)+(cappotto*80)+(finestre*350)+3000;
-  return {ponteggio,cappotto,finestre,unita,tot,unitario:tot/unita};
-}
+    // Banner verde + logo piccolo
+    doc.setFillColor(108,168,94); doc.rect(0,0,210,20,'F');
+    try{ doc.addImage(document.getElementById('logoHeader').src, 'PNG', 170, 4, 30, 12); }catch{}
 
-function update(){
-  const o = calc();
-  $('s_title').textContent = $('condominio').value;
-  $('s_sub').textContent   = $('luogo').value;
-  $('s_ponteggio').textContent = o.ponteggio;
-  $('s_cappotto').textContent  = o.cappotto;
-  $('s_finestre').textContent  = o.finestre;
-  $('s_unita').textContent     = o.unita;
-  $('s_totale').textContent    = EURO(o.tot);
-  $('s_unitario').textContent  = EURO(o.unitario);
-}
+    doc.setTextColor(255,255,255); doc.setFontSize(12); doc.text('ELEEVA SRL', 10, 13);
 
-$('form').addEventListener('input', update);
+    doc.setTextColor(0,0,0); doc.setFontSize(14); doc.text(($('condominio').value||'—'), 10, 32);
+    doc.setFontSize(11); doc.text(($('luogo').value||'—'), 10, 40);
 
-// ============= GENERA PDF + UPLOAD =============
-$('form').addEventListener('submit', async e =>{
-  e.preventDefault();
-  update();
-  const pdfFile = await generaPDF();
-  const jsonFile = generaJSON();
+    if(foto64){ try{ doc.addImage(foto64, 'JPEG', 10, 48, 90, 68); }catch{} }
 
-  if(!GoogleUser){ alert('Devi accedere con Google prima di salvare in Drive'); return; }
+    // Solo i risultati totali in mq
+    doc.setFontSize(12);
+    doc.text('Ponteggio (mq): ' + o.ponteggio.toLocaleString('it-IT'), 110, 58);
+    doc.text('Cappotto (mq): ' + o.cappotto.toLocaleString('it-IT'), 110, 70);
+    doc.text('Finestre (n°): ' + o.finestre.toLocaleString('it-IT'), 110, 82);
+    doc.text('Unità (n°): '    + o.unita.toLocaleString('it-IT'),    110, 94);
 
-  await uploadToDrive(pdfFile);
-  await uploadToDrive(jsonFile);
+    doc.setFontSize(14); doc.text('Totale: ' + new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(o.tot), 10, 125);
+    doc.text('A partire da ' + new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(o.tot/o.unita) + ' / unità', 10, 135);
 
-  alert('✅ Salvato su Drive con successo!');
-});
+    doc.save('preventivo.pdf');
+  }
 
-async function generaPDF(){
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF();
-  const o=calc();
-
-  // HEADER COLORATO + LOGO
-  doc.setFillColor(108,168,94);
-  doc.rect(0,0,210,25,'F');
-  doc.setTextColor(255,255,255);
-  doc.setFontSize(16);
-  doc.text('ELEEVA SRL',10,15);
-
-  try{
-    doc.addImage("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABB0AAAM4CAYAAACAw5qVAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABAtp...","PNG",160,5,40,12);
-  }catch{}
-
-  doc.setTextColor(0,0,0);
-  doc.setFontSize(14);
-  doc.text($('condominio').value,10,40);
-  doc.setFontSize(11);
-  doc.text($('luogo').value,10,48);
-
-  if(foto64){ doc.addImage(foto64,'JPEG',10,55,80,60); }
-
-  doc.setFontSize(12);
-  doc.text('Ponteggio (mq): '+o.ponteggio,110,60);
-  doc.text('Cappotto (mq): '+o.cappotto,110,72);
-  doc.text('Finestre: '+o.finestre,110,84);
-  doc.text('Unità: '+o.unita,110,96);
-
-  doc.setFontSize(14);
-  doc.text('Totale: '+EURO(o.tot),10,130);
-  doc.text('A partire da '+EURO(o.unitario)+' / unità',10,140);
-
-  const pdfBlob = doc.output('blob');
-  return new File([pdfBlob], 'preventivo.pdf', {type:'application/pdf'});
-}
-
-function generaJSON(){
-  const o=calc();
-  const data={
-    condominio:$('condominio').value,
-    luogo:$('luogo').value,
-    ...o,
-    foto:foto64
-  };
-  return new File([JSON.stringify(data,null,2)], 'preventivo.json', {type:'application/json'});
-}
+  // init
+  $('year').textContent = new Date().getFullYear();
+  updatePreview();
 </script>
-
 </body>
 </html>
